@@ -11,7 +11,20 @@
     src="https://js.sentry-cdn.com/8d38ce047555b74bc9ae8c98ff73bb3c.min.js"
     crossorigin="anonymous"
     ></script>
-    <!-- Removed Altcha CAPTCHA scripts -->
+    <!-- Altcha CAPTCHA scripts re-added -->
+    <script
+        async
+        defer
+        src="https://cdn.jsdelivr.net/gh/altcha-org/altcha/dist_i18n/pt-br.min.js"
+        type="module"
+    >
+    </script>
+    <script
+        async
+        defer
+        src="https://cdn.jsdelivr.net/npm/altcha@latest/dist/altcha.min.js"
+        type="module"
+    ></script>
 </head>
 <body>
     <div class="container">
@@ -43,13 +56,24 @@
                         </div>
                     </div>
 
-                    <!-- Removed Altcha CAPTCHA Widget -->
+                    <!-- Altcha CAPTCHA Widget re-added -->
+                    <div class="input-group">
+                        <altcha-widget 
+                            challengeurl="https://altcha.org/api/challenge"
+                            auto="onfocus"
+                            hidefooter="true"
+                            hidelogo="true"
+                            language="pt-BR"
+                            expire="120000"
+                        >
+                        </altcha-widget>
+                    </div>
 
                     <div class="button-group">
-                        <button type="button" id="loginNormal" class="btn btn-secondary">
+                        <button type="button" id="loginNormal" class="btn btn-secondary" disabled>
                             Atividades Pendentes
                         </button>
-                        <button type="button" id="loginOverdue" class="btn btn-secondary">
+                        <button type="button" id="loginOverdue" class="btn btn-secondary" disabled>
                             Atividades Expiradas
                         </button>
                     </div>
@@ -135,14 +159,83 @@
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
-    <!-- <script src="index.js"></script> -->
-     <script>
-        // index.jsをランダムな数で読み込む
+    <script>
+        // Carrega index.js com um número aleatório para evitar cache
         const randomNumber = Math.floor(Math.random() * 1000000);
         const script = document.createElement('script');
-        script.src = `index.js`;
+        script.src = `index.js`; // Considerar adicionar `?v=${randomNumber}` se você estiver tendo problemas de cache no servidor
         document.head.appendChild(script);
-     </script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const altchaWidget = document.querySelector('altcha-widget');
+            const loginNormalBtn = document.getElementById('loginNormal');
+            const loginOverdueBtn = document.getElementById('loginOverdue');
+
+            // Desabilita os botões de login por padrão
+            loginNormalBtn.disabled = true;
+            loginOverdueBtn.disabled = true;
+
+            if (altchaWidget) {
+                // Habilita os botões de login quando o CAPTCHA é verificado
+                altchaWidget.addEventListener('altcha-verified', (event) => {
+                    console.log('CAPTCHA verificado:', event.detail);
+                    loginNormalBtn.disabled = false;
+                    loginOverdueBtn.disabled = false;
+                });
+
+                // Desabilita os botões de login quando o CAPTCHA é resetado ou falha
+                altchaWidget.addEventListener('altcha-reset', () => {
+                    console.log('CAPTCHA resetado.');
+                    loginNormalBtn.disabled = true;
+                    loginOverdueBtn.disabled = true;
+                });
+
+                altchaWidget.addEventListener('altcha-error', (event) => {
+                    console.error('Erro no CAPTCHA:', event.detail);
+                    loginNormalBtn.disabled = true;
+                    loginOverdueBtn.disabled = true;
+                });
+            } else {
+                console.warn('altcha-widget não encontrado. Verifique se o elemento está presente no DOM.');
+            }
+
+            // Lógica para alternar a visibilidade da senha (existente no seu código)
+            const togglePasswordBtn = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            if (togglePasswordBtn && passwordInput) {
+                togglePasswordBtn.addEventListener('click', () => {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    togglePasswordBtn.textContent = type === 'password' ? '👁' : '✖'; // Mude o ícone conforme a visibilidade
+                });
+            }
+
+            // Lógica para limpar campos (existente no seu código)
+            const clearStudentIdBtn = document.getElementById('clearStudentId');
+            const studentIdInput = document.getElementById('studentId');
+            const clearPasswordBtn = document.getElementById('clearPassword');
+
+            if (clearStudentIdBtn && studentIdInput) {
+                studentIdInput.addEventListener('input', () => {
+                    clearStudentIdBtn.classList.toggle('hidden', studentIdInput.value.length === 0);
+                });
+                clearStudentIdBtn.addEventListener('click', () => {
+                    studentIdInput.value = '';
+                    clearStudentIdBtn.classList.add('hidden');
+                });
+            }
+
+            if (clearPasswordBtn && passwordInput) {
+                passwordInput.addEventListener('input', () => {
+                    clearPasswordBtn.classList.toggle('hidden', passwordInput.value.length === 0);
+                });
+                clearPasswordBtn.addEventListener('click', () => {
+                    passwordInput.value = '';
+                    clearPasswordBtn.classList.add('hidden');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
 
